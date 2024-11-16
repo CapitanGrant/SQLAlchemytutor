@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated, List
 
 from sqlalchemy import Integer, func, Text, String, ARRAY
-from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column, class_mapper
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 
 from config import settings
@@ -30,6 +30,12 @@ class Base(AsyncAttrs, DeclarativeBase):
     def __tablename__(cls) -> str:
         return cls.__name__.lower() + 's'
 
+    def to_dict(self) -> dict:
+        """"Универсальный метод для конвертации объекта SQLAlchemy в словарь"""
+        # Получаем маппер для текущей модели
+        columns = class_mapper(self.__class__).columns
+        # Возвращаем словарь всех колонок и значений\
+        return {column.key: getattr(self, column.key) for column in columns}
 
 def connection(method):
     async def wrapper(*args, **kwargs):
